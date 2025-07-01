@@ -17,38 +17,22 @@ import backArrow from "../../assets/icons/back-arrow.png";
 import edit from "@/assets/icons/edit.png";
 import profileD from "@/assets/images/profile.png";
 import ChatMenu from "@/components/ThreeDotsMenu";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import axios from "axios";
 import dayjs from "dayjs";
-import moment from "moment";
+import { useFonts, Inter_400Regular } from "@expo-google-fonts/inter";
 
 export default function HomeScreen() {
   const [value, setValue] = useState("");
   const [showActions, setShowActions] = useState(false);
-  const [groupedChats, setGroupedChats] = useState<GroupedMessage[]>([]);
+
   const [chats, setChats] = useState<Chat[]>([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [meta, setMeta] = useState<MetaData | null>(null);
 
-  const listRef = useRef<FlatList>(null);
-
-  const groupMessagesByDate = (messages: Chat[]) => {
-    const result: GroupedMessage[] = [];
-    let lastDate = "";
-
-    messages.forEach((msg) => {
-      const msgDate = moment(msg.time).format("YYYY-MM-DD");
-      if (msgDate !== lastDate) {
-        result.push({ type: "date", date: msgDate });
-        lastDate = msgDate;
-      }
-      result.push({ type: "message", item: msg });
-    });
-
-    return result;
-  };
+  const listRef = useRef(null);
 
   const fetchChats = async (pageNum: number) => {
     setLoading(true);
@@ -64,10 +48,7 @@ export default function HomeScreen() {
           to: response.data.to,
         });
       }
-      // setChats((prev) => [...newChats, ...prev]);
-      const updatedChats = [...newChats, ...chats];
-      setChats(updatedChats);
-      setGroupedChats(groupMessagesByDate(updatedChats));
+      setChats((prev) => [...newChats, ...prev]);
     } catch (error: any) {
       console.error("Error fetching chats", error.message);
     } finally {
@@ -76,7 +57,10 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    fetchChats(page);
+    const getChats = async () => {
+      await fetchChats(page);
+    };
+    getChats();
   }, [page]);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -126,28 +110,16 @@ export default function HomeScreen() {
           <Text
             className={`text-xs mt-1 ${isMe ? "text-gray-200" : "text-gray-500"}`}
           >
-            {moment(item.time).format("hh:mm A")}
+            {messageTime}
           </Text>
         </View>
       </View>
     );
   };
 
-  const renderItem = ({ item }: { item: GroupedMessage }) => {
-    if (item.type === "date") {
-      return (
-        <View className="items-center my-2">
-          <Text className="text-sm text-gray-500 font-Jakarta">
-            {moment(item.date).format("MMMM D, YYYY")}
-          </Text>
-        </View>
-      );
-    } else if (item.type === "message" && item.item) {
-      return <MessageItem item={item.item} />;
-    }
-    return null;
+  const renderItem = ({ item }: { item: Chat }) => {
+    return <MessageItem item={item} />;
   };
-
   const handleSend = () => {
     if (value.trim() === "") return;
     const newMessage: Chat = {
@@ -161,11 +133,8 @@ export default function HomeScreen() {
         is_kyc_verified: true,
       },
     };
-    const updated = [...chats, newMessage];
-    setChats(updated);
-    setGroupedChats(groupMessagesByDate(updated));
+    setChats((prev) => [...prev, newMessage]);
     setValue("");
-    setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
   };
   return (
     <KeyboardAvoidingView
@@ -217,12 +186,8 @@ export default function HomeScreen() {
 
             <View className="w-full h-[1px] bg-gray-200 mt-5"></View>
             <FlatList
-              data={groupedChats}
-              keyExtractor={(item, index) =>
-                item.type === "date"
-                  ? `date-${item.date}`
-                  : item.item?.id || index.toString()
-              }
+              data={chats}
+              keyExtractor={(item) => item.id.toString()}
               ref={listRef}
               renderItem={renderItem}
               onScroll={handleScroll}
