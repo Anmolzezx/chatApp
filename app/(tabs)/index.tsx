@@ -17,20 +17,38 @@ import backArrow from "../../assets/icons/back-arrow.png";
 import edit from "@/assets/icons/edit.png";
 import profileD from "@/assets/images/profile.png";
 import ChatMenu from "@/components/ThreeDotsMenu";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import axios from "axios";
+import dayjs from "dayjs";
+import moment from "moment";
 
 export default function HomeScreen() {
   const [value, setValue] = useState("");
   const [showActions, setShowActions] = useState(false);
-
+  const [groupedChats, setGroupedChats] = useState<GroupedMessage[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [meta, setMeta] = useState<MetaData | null>(null);
 
-  const listRef = useRef(null);
+  const listRef = useRef<FlatList>(null);
+
+  const groupMessagesByDate = (messages: Chat[]) => {
+    const result: GroupedMessage[] = [];
+    let lastDate = "";
+
+    messages.forEach((msg) => {
+      const msgDate = moment(msg.time).format("YYYY-MM-DD");
+      if (msgDate !== lastDate) {
+        result.push({ type: "date", date: msgDate });
+        lastDate = msgDate;
+      }
+      result.push({ type: "message", item: msg });
+    });
+
+    return result;
+  };
 
   const fetchChats = async (pageNum: number) => {
     setLoading(true);
@@ -46,7 +64,10 @@ export default function HomeScreen() {
           to: response.data.to,
         });
       }
-      setChats((prev) => [...newChats, ...prev]);
+      // setChats((prev) => [...newChats, ...prev]);
+      const updatedChats = [...newChats, ...chats];
+      setChats(updatedChats);
+      setGroupedChats(groupMessagesByDate(updatedChats));
     } catch (error: any) {
       console.error("Error fetching chats", error.message);
     } finally {
@@ -55,22 +76,20 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    const getChats = async () => {
-      await fetchChats(page);
-    };
-    getChats();
+    fetchChats(page);
   }, [page]);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { nativeEvent } = event;
-    if (nativeEvent.contentOffset.y < 50 && !loading) {
+    const { contentOffset } = event.nativeEvent;
+    if (contentOffset.y < 50 && !loading) {
       setPage((prev) => prev + 1);
     }
   };
 
-  const renderItem = useCallback(({ item }: { item: Chat }) => {
+  const MessageItem = ({ item }: { item: Chat }) => {
     const isMe = item.sender.self;
     const isVerified = item.sender.is_kyc_verified;
+    const messageTime = dayjs(item.time).format("hh:mm A");
     return (
       <View
         className={`flex-row items-start my-2 ${
@@ -100,14 +119,35 @@ export default function HomeScreen() {
           }`}
         >
           <Text
-            className={`${isMe ? "text-white" : "text-black"} text-lg font-Jakarta`}
+            className={`${isMe ? "text-white" : "text-black"} text-lg font-inter`}
           >
             {item.message}
+          </Text>
+          <Text
+            className={`text-xs mt-1 ${isMe ? "text-gray-200" : "text-gray-500"}`}
+          >
+            {moment(item.time).format("hh:mm A")}
           </Text>
         </View>
       </View>
     );
-  }, []);
+  };
+
+  const renderItem = ({ item }: { item: GroupedMessage }) => {
+    if (item.type === "date") {
+      return (
+        <View className="items-center my-2">
+          <Text className="text-sm text-gray-500 font-Jakarta">
+            {moment(item.date).format("MMMM D, YYYY")}
+          </Text>
+        </View>
+      );
+    } else if (item.type === "message" && item.item) {
+      return <MessageItem item={item.item} />;
+    }
+    return null;
+  };
+
   const handleSend = () => {
     if (value.trim() === "") return;
     const newMessage: Chat = {
@@ -121,8 +161,11 @@ export default function HomeScreen() {
         is_kyc_verified: true,
       },
     };
-    setChats((prev) => [...prev, newMessage]);
+    const updated = [...chats, newMessage];
+    setChats(updated);
+    setGroupedChats(groupMessagesByDate(updated));
     setValue("");
+    setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
   };
   return (
     <KeyboardAvoidingView
@@ -140,9 +183,7 @@ export default function HomeScreen() {
                 className="h-6 w-6"
                 resizeMode="contain"
               />
-              <Text className="flex-1 font-JakartaBold text-3xl ml-1">
-                Trip 1
-              </Text>
+              <Text className="flex-1 font-inter text-3xl ml-1">Trip 1</Text>
               <Image
                 source={edit}
                 alt="back"
@@ -176,8 +217,12 @@ export default function HomeScreen() {
 
             <View className="w-full h-[1px] bg-gray-200 mt-5"></View>
             <FlatList
-              data={chats}
-              keyExtractor={(item) => item.id.toString()}
+              data={groupedChats}
+              keyExtractor={(item, index) =>
+                item.type === "date"
+                  ? `date-${item.date}`
+                  : item.item?.id || index.toString()
+              }
               ref={listRef}
               renderItem={renderItem}
               onScroll={handleScroll}

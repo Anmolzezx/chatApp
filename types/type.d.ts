@@ -13,3 +13,7 @@ type Chat = {
   };
   time: string;
 };
+
+type GroupedMessage =
+  | { type: "message"; item: Chat }
+  | { type: "date"; date: string };

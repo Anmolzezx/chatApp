@@ -9,13 +9,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        Jakarta: ["Jakarta", "sans-serif"],
-        JakartaBold: ["Jakarta-Bold", "sans-serif"],
-        JakartaExtraBold: ["Jakarta-ExtraBold", "sans-serif"],
-        JakartaExtraLight: ["Jakarta-ExtraLight", "sans-serif"],
-        JakartaLight: ["Jakarta-Light", "sans-serif"],
-        JakartaMedium: ["Jakarta-Medium", "sans-serif"],
-        JakartaSemiBold: ["Jakarta-SemiBold", "sans-serif"],
+        inter: ["Inter_400Regular"],
+        "inter-medium": ["Inter_500Medium"],
+        "inter-bold": ["Inter_700Bold"],
       },
       colors: {
         primary: {
