@@ -17,10 +17,9 @@ import backArrow from "../../assets/icons/back-arrow.png";
 import edit from "@/assets/icons/edit.png";
 import profileD from "@/assets/images/profile.png";
 import ChatMenu from "@/components/ThreeDotsMenu";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import axios from "axios";
-import { list } from "postcss";
 
 export default function HomeScreen() {
   const [value, setValue] = useState("");
@@ -69,17 +68,17 @@ export default function HomeScreen() {
     }
   };
 
-  const renderItem = ({ item }: { item: Chat }) => {
+  const renderItem = useCallback(({ item }: { item: Chat }) => {
     const isMe = item.sender.self;
     const isVerified = item.sender.is_kyc_verified;
     return (
       <View
-        className={`flex-row items-end my-1 ${
+        className={`flex-row items-start my-2 ${
           isMe ? "justify-end" : "justify-start"
         }`}
       >
         {!isMe && (
-          <View className="relative w-8 h-8 mx-1">
+          <View className="relative w-8 h-8 mx-1 mr-3">
             <Image
               source={{ uri: item.sender.image }}
               className="w-8 h-8 rounded-full mx-1"
@@ -96,17 +95,19 @@ export default function HomeScreen() {
         )}
 
         <View
-          className={`max-w-[75%] px-4 py-2 font-Jakarta rounded-xl ${
+          className={`max-w-[75%] px-4 py-2 rounded-xl ${
             isMe ? "bg-blue-500 rounded-tr-none" : "bg-white rounded-tl-none"
           }`}
         >
-          <Text className={`${isMe ? "text-white" : "text-black"}`}>
+          <Text
+            className={`${isMe ? "text-white" : "text-black"} text-lg font-Jakarta`}
+          >
             {item.message}
           </Text>
         </View>
       </View>
     );
-  };
+  }, []);
   const handleSend = () => {
     if (value.trim() === "") return;
     const newMessage: Chat = {
@@ -153,7 +154,7 @@ export default function HomeScreen() {
               <View className="flex-row -space-x-2">
                 <Image
                   source={profileD}
-                  className="w-6 h-6 rounded-full border=2"
+                  className="w-16 h-16 rounded-full border=2"
                   resizeMode="cover"
                 />
               </View>
@@ -176,9 +177,13 @@ export default function HomeScreen() {
             <View className="w-full h-[1px] bg-gray-200 mt-5"></View>
             <FlatList
               data={chats}
+              keyExtractor={(item) => item.id.toString()}
               ref={listRef}
               renderItem={renderItem}
               onScroll={handleScroll}
+              initialNumToRender={20}
+              maxToRenderPerBatch={10}
+              ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
               contentContainerStyle={{ padding: 10 }}
             />
 
