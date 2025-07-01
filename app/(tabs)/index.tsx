@@ -17,11 +17,10 @@ import backArrow from "../../assets/icons/back-arrow.png";
 import edit from "@/assets/icons/edit.png";
 import profileD from "@/assets/images/profile.png";
 import ChatMenu from "@/components/ThreeDotsMenu";
-import { memo, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import axios from "axios";
 import dayjs from "dayjs";
-import { useFonts, Inter_400Regular } from "@expo-google-fonts/inter";
 
 export default function HomeScreen() {
   const [value, setValue] = useState("");
@@ -32,7 +31,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [meta, setMeta] = useState<MetaData | null>(null);
 
-  const listRef = useRef(null);
+  const listRef = useRef<FlatList>(null);
 
   const fetchChats = async (pageNum: number) => {
     setLoading(true);
@@ -48,7 +47,13 @@ export default function HomeScreen() {
           to: response.data.to,
         });
       }
-      setChats((prev) => [...newChats, ...prev]);
+      setChats((prev) => {
+        const updated = [...newChats, ...prev];
+        setTimeout(() => {
+          listRef.current?.scrollToEnd({ animated: false });
+        }, 100);
+        return updated;
+      });
     } catch (error: any) {
       console.error("Error fetching chats", error.message);
     } finally {
@@ -133,7 +138,13 @@ export default function HomeScreen() {
         is_kyc_verified: true,
       },
     };
-    setChats((prev) => [...prev, newMessage]);
+    setChats((prev) => {
+      const updated = [...prev, newMessage];
+      setTimeout(() => {
+        listRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+      return updated;
+    });
     setValue("");
   };
   return (
@@ -195,6 +206,7 @@ export default function HomeScreen() {
               maxToRenderPerBatch={10}
               ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
               contentContainerStyle={{ padding: 10 }}
+              keyboardShouldPersistTaps="handled"
             />
 
             <View className=" relative px-6 py-10 w-full">
