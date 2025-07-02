@@ -1,50 +1,56 @@
-# Welcome to your Expo app 👋
+# 🚀 React Native Chat App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple and clean chat application built with **React Native**, using a chat API to fetch messages and display them with real-time styling. Inspired by apps like WhatsApp and Messenger, it features:
 
-## Get started
+- TailwindCSS via `nativewind`
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 📱 Features
 
-2. Start the app
+- Fetches paginated messages from [Corider API](https://qa.corider.in/assignment/chat)
+- Auto-scroll to latest message on open and after sending
+- Keyboard-aware input with attachment options
+- Smooth UX for chatting experience
+- Menu (three dots) with action options
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 🛠️ Technologies Used
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **React Native** (via Expo)
+- **TypeScript**
+- **NativeWind (Tailwind CSS for React Native)**
+- **Axios** – for API requests
+- **Moment.js / Dayjs** – for date formatting
+- **Expo Icons** – for UI icons
+- **Expo Google Fonts** – for custom fonts
+- **FlatList** – for rendering chat messages
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+## 🧹 Code Quality
 
-When you're ready, run:
+This project uses:
+
+- **ESLint** – for static code analysis and catching issues
+- **Prettier** – for consistent code formatting
+
+## 📸 Screenshots
+
+Include images in a folder like `/assets/screenshot/`.
+
+(assets/screenshot.jpg), (assets/profileDp.jpg)
+---
+
+## 📹 Screencast
+
+[Click to view the screencast](Demo/demoVideo.mp4)
+
+## 🔧 Installation
 
 ```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+git clone https://github.com/yourusername/react-native-chat-app.git
+cd react-native-chat-app
+npm install
+npx expo start
